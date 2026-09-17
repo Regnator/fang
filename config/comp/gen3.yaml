@@ -31,7 +31,6 @@ esphome:
         - lambda: !lambda |-
             id(uiState).publish_state("Starting...");
         - logger.set_level: INFO
-
     - priority: -100
       then:
         - lambda: !lambda |-
@@ -48,12 +47,6 @@ esphome:
             }
 
             id(last_cleaning_duration).publish_state(id(g_last_cleaning_duration));
-
-            // Update nbs_time and text entity from persisted global
-            if (!id(g_timezone).empty()) {
-              id(timezone_text).publish_state(id(g_timezone).c_str());
-              ESP_LOGI("timezone", "Restored timezone: %s", id(g_timezone).c_str());
-            }
 
             char buf[40];
             snprintf(
