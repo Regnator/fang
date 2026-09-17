@@ -49,13 +49,6 @@ esphome:
 
             id(last_cleaning_duration).publish_state(id(g_last_cleaning_duration));
 
-            // Home Assistant can push the parsed timezone over the API, so we only
-            // keep the persisted string for display and not the removed set_timezone() call.
-            if (!id(g_timezone).empty()) {
-              id(timezone_text).publish_state(id(g_timezone).c_str());
-              ESP_LOGI("timezone", "Restored timezone: %s", id(g_timezone).c_str());
-            }
-
             char buf[40];
             snprintf(
               buf, sizeof(buf),
@@ -187,11 +180,6 @@ globals:
     type: uint8_t[8]
     restore_value: yes
     initial_value: '{0,0,0,0,0,0,0,0}'
-
-  - id: g_timezone
-    type: std::string
-    restore_value: yes
-    initial_value: ''
 
 
 interval:
@@ -590,18 +578,6 @@ text:
         );
 
         id(scheduleset).publish_state(buf);
-
-  - platform: template
-    id: timezone_text
-    name: "Timezone"
-    mode: TEXT
-    set_action:
-      lambda: !lambda |-
-        // Keep the user-facing value and persisted string, but let Home Assistant
-        // provide the timezone over its API instead of calling the removed setter.
-        id(timezone_text).publish_state(x.c_str());
-        id(g_timezone) = std::string(x.c_str());
-        ESP_LOGI("timezone", "Timezone value stored: %s", x.c_str());
 
 
 sensor:
