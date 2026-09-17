@@ -49,6 +49,13 @@ esphome:
 
             id(last_cleaning_duration).publish_state(id(g_last_cleaning_duration));
 
+            // Update nbs_time and text entity from persisted global
+            if (!id(g_timezone).empty()) {
+              id(nbs_time).set_timezone(id(g_timezone).c_str());
+              id(timezone_text).publish_state(id(g_timezone).c_str());
+              ESP_LOGI("timezone", "Restored timezone: %s", id(g_timezone).c_str());
+            }
+
             char buf[40];
             snprintf(
               buf, sizeof(buf),
@@ -180,6 +187,11 @@ globals:
     type: uint8_t[8]
     restore_value: yes
     initial_value: '{0,0,0,0,0,0,0,0}'
+
+  - id: g_timezone
+    type: std::string
+    restore_value: yes
+    initial_value: ''
 
 
 interval:
@@ -578,6 +590,17 @@ text:
         );
 
         id(scheduleset).publish_state(buf);
+
+  - platform: template
+    id: timezone_text
+    name: "Timezone"
+    mode: TEXT
+    set_action:
+      lambda: !lambda |-
+        id(timezone_text).publish_state(x.c_str()); // update this text component
+        id(g_timezone) = std::string(x.c_str()); // store tz in global
+        id(nbs_time).set_timezone(x.c_str()); // set timezone for time
+        ESP_LOGI("timezone", "Timezone set to: %s", x.c_str()); // log
 
 
 sensor:
