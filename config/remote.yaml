@@ -24,7 +24,7 @@ wifi:
 
 packages:
     remote_package_files:
-      url: https://github.com/philip2809/neato-brainslug
+      url: https://github.com/Regnator/fang
       files:
         # - config/boards/esp32.yaml
         # - config/boards/esp32c3.yaml
@@ -37,4 +37,4 @@ packages:
         - config/comp/webserver.yaml
         - config/comp/gen3.yaml
         # - config/comp/gen2.yaml
-      ref: config
+      ref: main
