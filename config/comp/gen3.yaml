@@ -500,51 +500,6 @@ time:
     id: nbs_time
     on_time:
     timezone: "Europe/Berlin"
-      - minutes: /10
-        seconds: 0
-        then:
-          - lambda: !lambda |-
-              auto now = id(nbs_time).now();
-              if (!now.is_valid()) return;
-
-              uint8_t flags = id(g_schedule)[0];
-
-              // bit 0 = global enable
-              if (!(flags & 0x01)) {
-                ESP_LOGD("schedule", "Global disabled");
-                return;
-              }
-
-              // day_of_week: Sunday=1 ... Saturday=7
-              uint8_t dow = now.day_of_week;
-
-              // bit for day enable: bit1 = Sunday, bit2 = Monday, ...
-              uint8_t day_bit = 1 << dow;
-              if (!(flags & day_bit)) {
-                ESP_LOGD("schedule", "Day %d disabled", dow);
-                return;
-              }
-
-              // schedule value for today
-              uint8_t value = id(g_schedule)[dow];
-
-              // convert value → hour/min
-              uint8_t target_hour = value / 6;
-              uint8_t target_min  = (value % 6) * 10;
-
-              ESP_LOGD("schedule",
-                "Now %02d:%02d | Target %02d:%02d (value=%d)",
-                now.hour, now.minute,
-                target_hour, target_min,
-                value
-              );
-
-              // check match
-              if (now.hour == target_hour && now.minute == target_min) {
-                ESP_LOGD("schedule", "Schedule matched → DO ACTION");
-                id(houseClean).press();
-              }
-
 
 text:
   - platform: template
