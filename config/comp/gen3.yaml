@@ -31,6 +31,7 @@ esphome:
         - lambda: !lambda |-
             id(uiState).publish_state("Starting...");
         - logger.set_level: INFO
+
     - priority: -100
       then:
         - lambda: !lambda |-
@@ -47,6 +48,13 @@ esphome:
             }
 
             id(last_cleaning_duration).publish_state(id(g_last_cleaning_duration));
+
+            // Home Assistant can push the parsed timezone over the API, so we only
+            // keep the persisted string for display and not the removed set_timezone() call.
+            if (!id(g_timezone).empty()) {
+              id(timezone_text).publish_state(id(g_timezone).c_str());
+              ESP_LOGI("timezone", "Restored timezone: %s", id(g_timezone).c_str());
+            }
 
             char buf[40];
             snprintf(
@@ -492,7 +500,51 @@ time:
   - platform: ${time_platform}
     id: nbs_time
     on_time:
-    timezone: "Europe/Berlin"
+      - minutes: /10
+        seconds: 0
+        then:
+          - lambda: !lambda |-
+              auto now = id(nbs_time).now();
+              if (!now.is_valid()) return;
+
+              uint8_t flags = id(g_schedule)[0];
+
+              // bit 0 = global enable
+              if (!(flags & 0x01)) {
+                ESP_LOGD("schedule", "Global disabled");
+                return;
+              }
+
+              // day_of_week: Sunday=1 ... Saturday=7
+              uint8_t dow = now.day_of_week;
+
+              // bit for day enable: bit1 = Sunday, bit2 = Monday, ...
+              uint8_t day_bit = 1 << dow;
+              if (!(flags & day_bit)) {
+                ESP_LOGD("schedule", "Day %d disabled", dow);
+                return;
+              }
+
+              // schedule value for today
+              uint8_t value = id(g_schedule)[dow];
+
+              // convert value → hour/min
+              uint8_t target_hour = value / 6;
+              uint8_t target_min  = (value % 6) * 10;
+
+              ESP_LOGD("schedule",
+                "Now %02d:%02d | Target %02d:%02d (value=%d)",
+                now.hour, now.minute,
+                target_hour, target_min,
+                value
+              );
+
+              // check match
+              if (now.hour == target_hour && now.minute == target_min) {
+                ESP_LOGD("schedule", "Schedule matched → DO ACTION");
+                id(houseClean).press();
+              }
+
 
 text:
   - platform: template
@@ -538,6 +590,19 @@ text:
         );
 
         id(scheduleset).publish_state(buf);
+
+  - platform: template
+    id: timezone_text
+    name: "Timezone"
+    mode: TEXT
+    set_action:
+      lambda: !lambda |-
+        // Keep the user-facing value and persisted string, but let Home Assistant
+        // provide the timezone over its API instead of calling the removed setter.
+        id(timezone_text).publish_state(x.c_str());
+        id(g_timezone) = std::string(x.c_str());
+        ESP_LOGI("timezone", "Timezone value stored: %s", x.c_str());
+
 
 sensor:
   # --- GetCharger ---
@@ -1184,4 +1249,3 @@ button:
 
   - platform: restart
     name: Reboot ESP
-

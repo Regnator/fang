@@ -37,9 +37,8 @@ esphome:
         - lambda: !lambda |-
             id(uiState).publish_state("Starting...");
 
-            // ESPHome removed the string-based RealTimeClock::set_timezone() overload.
-            // Configure the timezone in the YAML time block or let Home Assistant
-            // push the parsed timezone over the API instead.
+            // Home Assistant can push the parsed timezone over the API, so we only
+            // keep the persisted string for display and not the removed set_timezone() call.
             if (!id(g_timezone).empty()) {
               id(timezone_text).publish_state(id(g_timezone).c_str());
               ESP_LOGI("timezone", "Restored timezone: %s", id(g_timezone).c_str());
@@ -335,7 +334,6 @@ uart:
 time:
   - platform: ${time_platform}
     id: nbs_time
-    timezone: "Europe/Berlin"
     on_time:
       - minutes: /10
         seconds: 0
@@ -434,9 +432,8 @@ text:
     mode: TEXT
     set_action:
       lambda: !lambda |-
-        // ESPHome removed the string-based set_timezone() overload.
-        // Keep the user-facing value and persisted string, but let the YAML
-        // timezone configuration or Home Assistant timezone API control the clock.
+        // Keep the user-facing value and persisted string, but let Home Assistant
+        // provide the timezone over its API instead of calling the removed setter.
         id(timezone_text).publish_state(x.c_str());
         id(g_timezone) = std::string(x.c_str());
         ESP_LOGI("timezone", "Timezone value stored: %s", x.c_str());
