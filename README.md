@@ -1,5 +1,5 @@
-[buymeacoffee]: https://www.buymeacoffee.com/philip2809
-[buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png
+THIS IS JUST A FORK OF THE MAIN PROJECT SINCE ITS CURRENTLY NOT WORKING WITH ESPHOME 2026.9.x BECAUSE SOME TIMEZONE STUFF WAS REMOVED.
+THE FIX WAS COMPLETELY VIBE CODED BY GITHUB COPILOT IN VS CODE!
 
 <div align="center">
   <img alt="vacuula Logo" src="./pics/logo.svg" width="250">
