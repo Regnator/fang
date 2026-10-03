@@ -10,9 +10,6 @@ THE FIX WAS COMPLETELY VIBE CODED BY GITHUB COPILOT IN VS CODE!
 
 _Control your Neato vacuum locally with the fang of vacuula_
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/V7V61PBIY6)
-[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee]
-
   <h2>
       <a href="https://discord.gg/PAgwhWvyD8">
         Discord
